@@ -1,128 +1,99 @@
 import React, {useEffect, useState} from 'react';
+import { useStore } from './store';    
 import { useLocalSearchParams} from 'expo-router';
-import { View, Text, FlatList } from 'react-native';
-import PocketBase from 'pocketbase';
+import { Modal, ScrollView, View, Text, FlatList, TextInput } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import MyButton from '../components/DefaultButton';
 import ExerciseCard from '../components/ExerciseCard';
-const pb = new PocketBase('http://127.0.0.1:8090');
 
-const defaultWorkout = {
-    id: 1,
-    workout_name: "workout 1",
-    exercises: [
-        {
-            id: 1,
-            exercise_name: "squats",
-            order_in_workout: 1,
-            sets: [
-                {
-                    id: 1,
-                    order: 1,
-                    reps: 10,
-                    load: 100,
-                },
-                {
-                    id: 2,
-                    order: 2,
-                    reps: 10,
-                    load: 100,
-                },
-                {
-                    id: 3,
-                    order: 3,
-                    reps: 10,
-                    load: 100,
-                },
-            ],
-        },
-        {
-            id: 2,
-            exercise_name: "bench press",
-            order_in_workout: 2,
-            sets: [
-                {
-                    id: 1,
-                    order: 1,
-                    reps: 10,
-                    load: 100,
-                },
-                {
-                    id: 2,
-                    order: 2,
-                    reps: 10,
-                    load: 100,
-                },
-                {
-                    id: 3,
-                    order: 3,
-                    reps: 10,
-                    load: 100,
-                },
-            ],
-        },
-    ],
-};
+
 
 export default function WorkoutContainer() {
     const { slug} = useLocalSearchParams();
-    const [workout, setWorkout] = useState(defaultWorkout);
-    const fetchWorkout = async () => {
-        try {
-            const recordWorkouts = await pb.collection('workoutDetails').getFullList({
-                filter: `workout_id = "${slug}"`,
-            });
+    const {fetchWorkout, fetchExercises, addExercise, exercises} = useStore();
+    const [workout, setWorkout] = useState(null)
+    const [modalVisible, setModalVisible] = useState(false);
+    const [exerciseTitle, setExerciseTitle] = useState('');
 
-            if (recordWorkouts.length > 0) {
-                const exercises = {};
-
-                recordWorkouts.forEach(record => {
-                    const { workout_exercise_id, order, exercise_name, ...set } = record;
-
-                    if (!exercises[workout_exercise_id]) {
-                        exercises[workout_exercise_id] = {
-                            order,
-                            workout_exercise_id,
-                            exercise_name,
-                            sets: [],
-                        };
-                    }
-
-                    exercises[workout_exercise_id].sets.push(set);
-                    console.log("exercises", JSON.stringify(Object.values(exercises), 0, 4));
-                });
-
-                // setWorkout({ exercises: Object.values(exercises) });
-            } else {
-                console.log("No records found for the given workout ID");
-                // setWorkout({ exercises: [] });
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
+    const handleNewExercise = () => {
+        console.log("create exercise", exerciseTitle);
+        addExercise(exerciseTitle);
+        setModalVisible(false);
+    }
     useEffect(() => {
-        fetchWorkout();
+        async function getWorkout() {
+            console.log("slug", slug);
+            if (slug) {
+                const fetchedWorkout = await fetchWorkout(slug.toString());
+                await fetchExercises(slug.toString());
+                console.log("fetchedWorkout", fetchedWorkout);
+                setWorkout(fetchedWorkout);
+            }
+        }
+        getWorkout();
     }, [slug]);
-   
+    if(!workout) {
+        return <ActivityIndicator />
+    }   
+  
     return (
-        <View className="flex-1 p-4">
-            <View className="flex bg-gray-100 p-2 border rounded-lg">
-                <WorkoutHeader workout={workout}/>
-                <FlatList
-                    data={workout.exercises}
-                    renderItem={({ item }) => <ExerciseCard exercise={item} />}
-                    keyExtractor={(item) => item.id.toString()}
+        <View style={{flex: 1, margin: 12, padding: 24,border: '1px lightblue solid'}}>
+            
+            <Modal
+                animationType="slide"
+                transparent={false}
+                visible={modalVisible}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View className="flex-1 justify-center align-center">
+                        <TextInput 
+                            placeholder={exerciseTitle.toString()} 
+                            className="border-b mb-4"
+                            value={exerciseTitle}
+                            onChangeText={setExerciseTitle}
+                            />
+                        <MyButton title="Close" className="mt-4" onPress={() => setModalVisible(false)} />
+                        <MyButton title="Create Exercise" onPress={() => handleNewExercise()} />
+                    
+                </View>
+            </Modal>
+                { (
+                    <FlatList
+                        data={exercises}
+                        renderItem={({ item }) => {
+                            //console.log("item", item);
+                            return (<ExerciseCard exercise={item} />)
+                        }}
+                        keyExtractor={(item) => item.exercise_id.toString()}
+                        ListHeaderComponent={() =>(
+                            <View>
+                                <WorkoutHeader workout={workout} />
+                                {exercises.length === 0 && <Text className="text-lg">No exercises yet</Text>}
+                                </View>
+                        )}
+                        ListFooterComponent={() => (
+                            <>
+                                <MyButton title="Add Exercise" onPress={() => setModalVisible(true)} />
+                                <MyButton title="save workout" style={{backgroundColor: 'lightblue'}} onPress={()=>saveWorkout()}/>
+                            </>
+                        )}
+                        contentContainerStyle={{flexGrow: 1}}
                     />
-                
-            </View>
+                )}
+            
+            
         </View>
     )
 }
-function WorkoutHeader({workout: {workout_name}}) {
+                 
+    
+
+function WorkoutHeader({workout: {title}}) {
     return (
         <View className="flex-row items-center justify-between border-b mb-2 pb-4 border-blue-100 ">
-            <Text className="pr-4 font-bold text-xl">{workout_name}</Text>
+            <TextInput className="pr-4 text-xl"
+        
+            defaultValue={title}/>
             <Text className="text-lg">1:00:01</Text>
             <MyButton title="Pause" /> 
         </View>

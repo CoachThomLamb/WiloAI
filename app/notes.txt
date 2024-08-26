@@ -1,0 +1,24 @@
+I wanted a place to make notes about the app so why not here. 
+not going to use markdown bc fuck markdown 
+but also maybe markdown ? 
+
+WAnt to get another developer/CEO type on the project manybe go on Toronto JS slack or discord. 
+tb d on that
+
+what to work on next with the app ?
+updaters to record workouts 
+can we make it look non shitty first ? 
+
+
+I dont think the way I return workouts right now is that great. 
+I think I should reutnr them in the way that I Want to use them having all this extra data in each se4t is kinda messy
+I'd rather just do it clean and have a nested set of arrays., 
+Alsol journalling this is helpiung me to thijnk abgvout it more clearly 
+I am going to take doggo for a renderItem
+Next steps are to clean up the data so its easier to understand and work with 
+
+also Ask copilot 
+
+just crushed it foir like 30 minutes 
+going to take a break for a bit and go look at girls 
+
