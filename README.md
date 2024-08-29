@@ -1,9 +1,13 @@
 # Welcome to Wilo the Habit Hound  👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
-The example app has been replace by the workout tracking app. 
+
+The example app has been replaced by the workout tracking app. 
+
 This is very early stages. 
+
 I'm Thom Lamb and I built this app to learn Expo and because I love working out. I'm hoping to eventually use it to train other people but we will see. 
+
 For now it's just a place for me to work on dev skills and connect with other people who love to build stuff and maybe like to work out as well. 
 Thanks for stopping by. 
 
